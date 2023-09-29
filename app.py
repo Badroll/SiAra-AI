@@ -30,6 +30,7 @@ def aksara2latin():
     currentpath = "uploads//"
     filepath = currentpath + filename
     labeled_filepath = currentpath + "labeled-" + filename
+    resized_filepath = currentpath + "resized-" + filename
 
     def sort_objects_by_horizontal(detections):
         # Mengurutkan objek berdasarkan koordinat x dari centroid
@@ -67,6 +68,8 @@ def aksara2latin():
         imH, imW, _ = image.shape
         image_resized = cv2.resize(image_rgb, (width, height))
         input_data = np.expand_dims(image_resized, axis=0)
+
+        cv2.imwrite(resized_filepath, image_resized)
 
         log += "\nimage shape:"
         log += f"\n{image.shape}\n"
@@ -141,10 +144,12 @@ def aksara2latin():
     log += "\n" + str(returnData) + "\n"
 
     helper.send_telegram(f"===== SIARA =====\n aksara2latin \n {request.url_root}")
+    helper.send_telegram_photo(resized_filepath)
     helper.send_telegram_photo(labeled_filepath)
     helper.send_telegram(log)
 
     os.remove(filepath)
+    os.remove(resized_filepath)
     os.remove(labeled_filepath)
 
     return helper.composeReply("SUCCESS", "Hasil konversi gambar ke teks latin", returnData)
