@@ -64,15 +64,21 @@ def aksara2latin():
         input_std = 127.5
 
         image = cv2.imread(imgpath)
+        #image = cv2.resize(image, (2000, 1500))
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         imH, imW, _ = image.shape
+        # image_rgb = cv2.resize(image_rgb, (2000, 1126))
+        # cv2.imwrite("uploads//resized-1-" + filename, image_rgb)
         image_resized = cv2.resize(image_rgb, (width, height))
         input_data = np.expand_dims(image_resized, axis=0)
 
         cv2.imwrite(resized_filepath, image_resized)
 
-        log += "\nimage shape:"
+        log += "\noriginal image shape:"
         log += f"\n{image.shape}\n"
+
+        log += "\nresized image shape:"
+        log += f"\n{image_resized.shape}\n"
 
         if float_input:
             input_data = (np.float32(input_data) - input_mean) / input_std
@@ -151,6 +157,7 @@ def aksara2latin():
     os.remove(filepath)
     os.remove(resized_filepath)
     os.remove(labeled_filepath)
+    log = ""
 
     return helper.composeReply("SUCCESS", "Hasil konversi gambar ke teks latin", returnData)
 

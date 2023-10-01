@@ -158,20 +158,20 @@ def post_processing(test_data):
         char_karakter = char_elemen[0]
         char_jenis = tipe(char_karakter)
         conf = char_elemen[1]
-        if char_jenis == "aksara" or char_jenis == "pasangan":
-            if conf > 0.4:
+        if char_jenis == "aksara" or (char_jenis == "pasangan" and not char_karakter == "V"):
+            if conf > 0.8:
                 processed.append(char_elemen)
         elif char_karakter == "V" or char_karakter == "-" or char_jenis == "pangkon":
             if conf > 0.4:
                 processed.append(char_elemen)
         elif char_jenis == "vokal":
-            if conf > 0.2:
+            if conf > 0.4:
                 processed.append(char_elemen)
         elif char_jenis == "paten":
-            if conf > 0.2:
+            if conf > 0.4:
                 processed.append(char_elemen)
         elif char_karakter == "]" or char_karakter == "}":
-            if conf > 0.3:
+            if conf > 0.4:
                 processed.append(char_elemen)
     print(processed)
     return processed
