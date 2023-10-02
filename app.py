@@ -18,6 +18,16 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 log = ""
 
+@app.route("/tes", methods = ["GET", "POST"])
+def tes():
+    import requests
+    TOKEN = "6353387757:AAHarFsMOrHwVg__9dGiEVOnal7_PGpPbuU"
+    chat_id = "-1001986787293"
+    message = "testing"
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
+    print(requests.get(url).json()) # this sends the message
+    return "y"
+
 @app.route("/aksara2latin", methods = ["GET", "POST"])
 def aksara2latin():
     global log

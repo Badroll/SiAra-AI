@@ -3,6 +3,9 @@ from os import path
 import hashlib
 from datetime import datetime
 
+TOKEN = "6353387757:AAHarFsMOrHwVg__9dGiEVOnal7_PGpPbuU"
+chat_id = "-1001986787293"
+
 def composeReply(status, message, payload = None):
     reply = {}
     reply["SENDER"] = "SIARAI"
@@ -26,8 +29,8 @@ def saveFile(file):
 
 def send_telegram(msg):
     import requests
-    TOKEN = "6353387757:AAEVJahhPnBpkKMncmRMdc__qURYUR6-kTs"
-    chat_id = "-4069351784"
+    # TOKEN = "6353387757:AAGMlehtqLbKopD1jDZl6FYehHOMoxrdxp4"
+    # chat_id = "-4069351784"
     message = msg
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
     print(requests.get(url).json()) # this sends the message
@@ -36,10 +39,10 @@ def send_telegram_photo(file):
     import requests
 
     # Token bot Telegram Anda
-    TOKEN = "6353387757:AAEVJahhPnBpkKMncmRMdc__qURYUR6-kTs"
+    # TOKEN = "6353387757:AAGMlehtqLbKopD1jDZl6FYehHOMoxrdxp4"
 
-    # Chat ID tempat Anda ingin mengirim gambar
-    chat_id = "-4069351784"
+    # # Chat ID tempat Anda ingin mengirim gambar
+    # chat_id = "-4069351784"
 
     # Path ke gambar yang ingin Anda kirim
     path_to_image = file
