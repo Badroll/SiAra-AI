@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
-from PIL import Image
+from PIL import Image, ImageFilter
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -72,6 +72,12 @@ def aksara2latin():
 
         input_mean = 127.5
         input_std = 127.5
+
+        gambar = Image.open(imgpath)
+        gambar = gambar.convert('L')
+        threshold = 128  # Nilai ambang batas, sesuaikan sesuai kebutuhan
+        gambar = gambar.point(lambda x: 0 if x < threshold else 255, '1')
+        gambar.save(imgpath)
 
         image = cv2.imread(imgpath)
         #image = cv2.resize(image, (2000, 1500))
@@ -150,6 +156,7 @@ def aksara2latin():
     objects = algorithm.post_processing(objects)
     objects = algorithm.arrange(objects)
     objects = algorithm.labeled2aksara(objects)
+    objects = algorithm.unpackaksara(objects)
     objects = algorithm.aksara2latin(objects)
 
     returnData = {

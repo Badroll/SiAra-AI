@@ -8,7 +8,7 @@ def tipe(c):
         r = "pasangan"
     elif (c in ["e", "[", "i", "u", "o"]):
         r = "vokal"
-    elif (c in ["r", "=", "h"]):
+    elif (c in ["{", "=", "h"]):
         r = "paten"
     elif (c in ["\\"]):
         r = "pangkon"
@@ -176,6 +176,7 @@ def post_processing(test_data):
     print(processed)
     return processed
        
+
 def arrange(test_data):
     listH = sort_horizontal_by_xmin(test_data)
     listH_formatted = format_list(listH)
@@ -328,6 +329,7 @@ def labeled2aksara(kalimat):
 
     r = r[:-1]
     
+    print("labeled2aksara")
     print(r)
     return r
 
@@ -399,7 +401,267 @@ def format_konsonan_dobel(s, asc = True):
     else:
         return s.replace("ť", "th").replace("ď", "dh").replace("ñ", "ny").replace("ń", "ng")
 
+
+def unpackaksara(aksara):
+    latin = ""
+    
+    list_aksara = list(aksara.split(","))
+    for karakter in list_aksara:
+        if karakter.startswith("pasangan_"):
+            unpacked = "sandangan_pangkon,aksara_" + karakter.replace("pasangan_", "")
+            latin += unpacked 
+        elif karakter == ("sandangan_paten_layar"):
+            unpacked = "aksara_ra,sandangan_pangkon"
+            latin += unpacked 
+        elif karakter == ("sandangan_paten_cecak"):
+            unpacked = "aksara_nga,sandangan_pangkon"
+            latin += unpacked 
+        elif karakter == ("sandangan_paten_wignyan"):
+            unpacked = "aksara_ha,sandangan_pangkon"
+            latin += unpacked
+        elif karakter == ("sandangan_konsonan_cakra_ra"):
+            unpacked = "sandangan_pangkon,aksara_ra"
+            latin += unpacked
+        elif karakter == ("sandangan_konsonan_cakra_keret"):
+            unpacked = "sandangan_pangkon,aksara_ra,sandangan_vokal_pepet"
+            latin += unpacked
+        elif karakter == ("sandangan_konsonan_pengkol"):
+            unpacked = "sandangan_pangkon,aksara_ya"
+            latin += unpacked
+        else:
+            latin += karakter
+        latin += ","
+
+    latin = latin.rstrip(",")
+
+    print("unpackaksara", latin)
+    return latin
+
+
 def aksara2latin(aksara):
+    latin = ""
+    
+    list_aksara = list(aksara.split(","))
+    index = 0
+    for karakter in list_aksara:
+        new_karakter = ""
+        if karakter.startswith("pasangan_"):
+            new_karakter = "sandangan_pangkon,aksara_" + karakter.replace("pasangan_", "")
+        elif karakter == "sandangan_konsonan_cakra_ra":
+            new_karakter = "sandangan_pangkon,aksara_ra"
+        elif karakter == "sandangan_konsonan_cakra_keret":
+            new_karakter = "sandangan_pangkon,aksara_ra,sandangan_vokal_pepet"
+        elif karakter == "sandangan_konsonan_pengkol":
+            new_karakter = "sandangan_pangkon," + "aksara_ya"
+        elif karakter == "sandangan_paten_layar":
+            new_karakter = "aksara_ra,sandangan_pangkon"
+        elif karakter == "sandangan_paten_wignyan":
+            new_karakter = "aksara_ha,sandangan_pangkon"
+        elif karakter == "sandangan_paten_cecak":
+            new_karakter = "aksara_nga,sandangan_pangkon"
+
+        if new_karakter != "":
+            list_aksara[index] = new_karakter
+        index = index+1
+
+    list_aksara = ','.join([str(elem) for elem in list_aksara])
+    # sampe sini hanya ada karakter:
+    # - aksara
+    # - sandangan vokal
+    # - sandangan pangkon (paten)
+
+    list_aksara = list(list_aksara.split(","))
+    list_kategori = []
+    for karakter in list_aksara:
+        if karakter.startswith("aksara_"):
+            list_kategori.append("aksara")
+        elif karakter.startswith("sandangan_vokal_"):
+            list_kategori.append("vokal")
+        elif karakter.startswith("sandangan_pangkon"):
+            list_kategori.append("pangkon")
+
+    print("list_aksara", list_aksara)
+    print("list_kategori", list_kategori)
+    
+    index = 0
+    sukukata = []
+    last_index = None
+    
+    print("start loop")
+    for karakter in list_aksara:
+        # aksara - vokal - aksara - pangkon
+        # aksara - aksara - pangkon
+        # aksara - vokal
+        # aksara
+
+        # skip hingga index karakter terakhir dalam suku kata terakhir
+        print(last_index)
+        if last_index and index <= last_index:
+            index = index+1
+            continue
+
+        row1 = list_kategori[index]
+        row2_exist = False
+        row3_exist = False
+        row4_exist = False
+        if len(list_kategori) >= index+1+1:
+            row2_exist = True
+        if len(list_kategori) >= index+1+2:
+            row3_exist = True
+        if len(list_kategori) >= index+1+3:
+            row4_exist = True
+        try:
+            row2 = list_kategori[index+1]
+            row3 = list_kategori[index+2]
+            row4 = list_kategori[index+3]
+        except Exception as e:
+            print(e)
+            
+        if not row2_exist:
+            sukukata.append([index, index])
+            print(sukukata)
+            last_index = index
+            #continue
+            index = index+1
+            continue
+
+        if row1 + row2 == "aksara" + "aksara":
+
+            if row3_exist and row3 == "pangkon":
+                sukukata.append([index, index+2])
+                last_index = index+2
+                #continue
+                index = index+1
+                continue
+
+            elif row3_exist and row3 == "vokal":
+                sukukata.append([index, index])
+                last_index = index
+                #continue
+                index = index+1
+                continue
+
+            elif row3_exist and row3 == "aksara":
+                sukukata.append([index, index])
+                last_index = index
+                #continue
+                index = index+1
+                continue 
+
+            if not row3_exist:
+                sukukata.append([index, index])
+                last_index = index
+                print(last_index)
+                #continue
+                index = index+1
+                continue
+        
+        if row1 + row2 == "aksara" + "vokal":
+
+            if not row3_exist:
+                sukukata.append([index, index+1])
+                last_index = index+1
+                #continue
+                index = index+1
+                continue
+        
+            if row4_exist:
+
+                if row3 == "aksara":
+
+                    if row4 == "pangkon":
+                        sukukata.append([index, index+3])
+                        last_index = index+3
+                        #continue
+                        index = index+1
+                        continue
+                    
+                    elif row4 == "vokal":
+                        sukukata.append([index, index+1])
+                        last_index = index+1
+                        #continue
+                        index = index+1
+                        continue
+                
+                else: #mustahil
+                    sukukata.append([index, index+1])
+                    last_index = index+1
+                    #continue
+                    index = index+1
+                    continue
+
+            #else:
+            sukukata.append([index, index+1])
+            last_index = index+1
+            #continue
+            index = index+1
+            continue
+        
+        else: #mustahil
+            sukukata.append([index, index+1])
+            last_index = index+1
+            #continue
+            index = index+1
+            continue
+
+        #continue
+        print("auto continue")
+        index = index+1
+        continue
+    
+    print("sukukata", sukukata)
+    
+    sukukata = [value for value in sukukata if type(value) != int]
+    print("sukukata", sukukata)
+
+    index = 0
+    for sk in sukukata:
+        print("sk", sk)
+        sk_aksara = list_aksara[sk[0]:sk[1]+1]
+        print("sk_aksara", sk_aksara)
+
+        sk_builder = ""
+        jndex = 0
+        for char in sk_aksara:
+            new_builder = ""
+            if char.startswith("aksara_"):
+                new_builder = remove_vokal(char.replace("aksara_", ""))
+                try:
+                    if sk_aksara[jndex+1].startswith("aksara_"):
+                        new_builder += "a"
+                except Exception as e:
+                    new_builder += "a"
+                    print(e)
+            if char.startswith("sandangan_vokal_"):
+                new_builder = vokal_sandangan(char)
+            if char.startswith("sandangan_pangkon"):
+                new_builder = ""
+            new_builder = format_konsonan_dobel(new_builder)
+            print("new_builder :",new_builder)
+            sk_builder += new_builder
+
+            jndex+=1
+
+        print("sk_builder =", sk_builder)
+
+        # is_last = index == len(sukukata)-1
+        # print("is_last",is_last)
+        # sk_builder = check_add_vokal_a(sk_builder, is_last)
+        # if sk[1] == len(list_aksara)-1 and list_kategori[len(list_kategori)-1] == "aksara":
+        #     sk_builder += "a"
+        latin += sk_builder
+
+        index = index+1
+    
+    latin = latin.replace("ď", "dh").replace("ť", "th").replace("ñ", "ny").replace("ń", "ng")
+
+    # input MURNI, output MURNI
+    print("LATIN =>", latin)
+    print("==========================================")
+    return latin
+
+
+def aksara2latin2(aksara):
     latin = ""
     
     list_aksara = list(aksara.split(","))
@@ -487,14 +749,14 @@ def aksara2latin(aksara):
                     index = index+1
                     continue
 
-                elif row3_exist and row3 == "vokal":
+                if row3_exist and row3 == "vokal":
                     sukukata.append([index, index])
                     last_index = index
                     #continue
                     index = index+1
                     continue
 
-                elif row3_exist and row3 == "aksara":
+                if row3_exist and row3 == "aksara":
                     sukukata.append([index, index])
                     last_index = index
                     #continue
@@ -508,7 +770,7 @@ def aksara2latin(aksara):
                     #continue
                     index = index+1
                     continue
-            
+        
             if row1 + row2 == "aksara" + "vokal":
 
                 if not row3_exist:
@@ -517,31 +779,13 @@ def aksara2latin(aksara):
                     #continue
                     index = index+1
                     continue
-            
-                if row4_exist:
 
-                    if row3 == "aksara":
-
-                        if row4 == "pangkon":
-                            sukukata.append([index, index+3])
-                            last_index = index+3
-                            #continue
-                            index = index+1
-                            continue
-                        
-                        elif row4 == "vokal":
-                            sukukata.append([index, index+1])
-                            last_index = index+1
-                            #continue
-                            index = index+1
-                            continue
-                    
-                    else: #mustahil
-                        sukukata.append([index, index+1])
-                        last_index = index+1
-                        #continue
-                        index = index+1
-                        continue
+                if row3 == "paten":
+                    sukukata.append([index, index+2])
+                    last_index = index+2
+                    #continue
+                    index = index+2
+                    continue
 
                 else:
                     sukukata.append([index, index+1])
@@ -550,12 +794,63 @@ def aksara2latin(aksara):
                     index = index+1
                     continue
             
-            else: #mustahil
-                sukukata.append([index, index+1])
-                last_index = index+1
-                #continue
-                index = index+1
-                continue
+                # if row4_exist:
+
+                #     if row3 == "aksara":
+
+                #         if row4 == "pangkon":
+                #             sukukata.append([index, index+3])
+                #             last_index = index+3
+                #             #continue
+                #             index = index+1
+                #             continue
+                        
+                #         elif row4 == "vokal":
+                #             sukukata.append([index, index+1])
+                #             last_index = index+1
+                #             #continue
+                #             index = index+1
+                #             continue
+                    
+                #     else: #mustahil
+                #         sukukata.append([index, index+1])
+                #         last_index = index+1
+                #         #continue
+                #         index = index+1
+                #         continue
+
+                # else:
+                #     sukukata.append([index, index+1])
+                #     last_index = index+1
+                #     #continue
+                #     index = index+1
+                #     continue
+
+            if (row1 + row2 == "aksara" + "pasangan") or (row1 + row2 == "aksara" + "cakra"):
+                
+                if not row3_exist:
+                    sukukata.append([index, index+1])
+                    last_index = index+1
+                    #continue
+                    index = index+1
+                    continue
+
+                if row4_exist:
+                    print(1)
+
+                else:
+                    sukukata.append([index, index+2])
+                    last_index = index+2
+                    #continue
+                    index = index+2
+                    continue
+            
+            # else: #mustahil
+            #     sukukata.append([index, index+1])
+            #     last_index = index+1
+            #     #continue
+            #     index = index+1
+            #     continue
 
             #continue
             print("auto continue")
