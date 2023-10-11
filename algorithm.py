@@ -708,12 +708,12 @@ def aksara2latin2(aksara):
     
     print("start loop")
     if not (len(list_aksara) == 1 and list_aksara[0] == ""):
-        for karakter in list_aksara:
+        
+        for karakter in list_kategori:
             print(last_index)
             if last_index and index <= last_index:
                 index = index+1
                 continue
-
             print("INDX", index)
             row1 = list_kategori[index]
             row2_exist = False
@@ -731,132 +731,66 @@ def aksara2latin2(aksara):
                 row4 = list_kategori[index+3]
             except Exception as e:
                 print(e)
-                
-            if not row2_exist:
-                sukukata.append([index, index])
+
+            rules1 = (
+                row2_exist and row3_exist and row4_exist and
+                row1 == "aksara"and
+                row2 == "vokal"and
+                row3 == "aksara"and
+                row4 == "pangkon"
+            )
+            if rules1:
+                print("rules1")
+                last_index = index+3
+                sukukata.append([index, last_index])
                 print(sukukata)
-                last_index = index
-                #continue
-                index = index+1
+                index+=1
                 continue
 
-            if row1 + row2 == "aksara" + "aksara":
+            rules2 = (
+                row2_exist and row3_exist and
+                row1 == "aksara"and
+                row2 == "aksara"and
+                row3 == "pangkon"
+            )
+            if rules2:
+                print("rules2")
+                last_index = index+2
+                sukukata.append([index, last_index])
+                print(sukukata)
+                index+=1
+                continue
 
-                if row3_exist and row3 == "pangkon":
-                    sukukata.append([index, index+2])
-                    last_index = index+2
-                    #continue
-                    index = index+1
-                    continue
+            rules3 = (
+                row2_exist and
+                row1 == "aksara"and
+                row2 == "vokal"
+            )
+            if rules3:
+                print("rules3")
+                last_index = index+1
+                sukukata.append([index, last_index])
+                print(sukukata)
+                index+=1
+                continue
 
-                if row3_exist and row3 == "vokal":
-                    sukukata.append([index, index])
-                    last_index = index
-                    #continue
-                    index = index+1
-                    continue
+            rules4 = (
+                row1 == "aksara"
+            )
+            if rules4:
+                print("rules4")
+                last_index = index
+                sukukata.append([index, last_index])
+                print(sukukata)
+                index+=1
+                continue
 
-                if row3_exist and row3 == "aksara":
-                    sukukata.append([index, index])
-                    last_index = index
-                    #continue
-                    index = index+1
-                    continue 
-
-                if not row3_exist:
-                    sukukata.append([index, index])
-                    last_index = index
-                    print(last_index)
-                    #continue
-                    index = index+1
-                    continue
-        
-            if row1 + row2 == "aksara" + "vokal":
-
-                if not row3_exist:
-                    sukukata.append([index, index+1])
-                    last_index = index+1
-                    #continue
-                    index = index+1
-                    continue
-
-                if row3 == "paten":
-                    sukukata.append([index, index+2])
-                    last_index = index+2
-                    #continue
-                    index = index+2
-                    continue
-
-                else:
-                    sukukata.append([index, index+1])
-                    last_index = index+1
-                    #continue
-                    index = index+1
-                    continue
-            
-                # if row4_exist:
-
-                #     if row3 == "aksara":
-
-                #         if row4 == "pangkon":
-                #             sukukata.append([index, index+3])
-                #             last_index = index+3
-                #             #continue
-                #             index = index+1
-                #             continue
-                        
-                #         elif row4 == "vokal":
-                #             sukukata.append([index, index+1])
-                #             last_index = index+1
-                #             #continue
-                #             index = index+1
-                #             continue
-                    
-                #     else: #mustahil
-                #         sukukata.append([index, index+1])
-                #         last_index = index+1
-                #         #continue
-                #         index = index+1
-                #         continue
-
-                # else:
-                #     sukukata.append([index, index+1])
-                #     last_index = index+1
-                #     #continue
-                #     index = index+1
-                #     continue
-
-            if (row1 + row2 == "aksara" + "pasangan") or (row1 + row2 == "aksara" + "cakra"):
-                
-                if not row3_exist:
-                    sukukata.append([index, index+1])
-                    last_index = index+1
-                    #continue
-                    index = index+1
-                    continue
-
-                if row4_exist:
-                    print(1)
-
-                else:
-                    sukukata.append([index, index+2])
-                    last_index = index+2
-                    #continue
-                    index = index+2
-                    continue
-            
-            # else: #mustahil
-            #     sukukata.append([index, index+1])
-            #     last_index = index+1
-            #     #continue
-            #     index = index+1
-            #     continue
-
-            #continue
-            print("auto continue")
-            index = index+1
+            #invalid case
+            print("invalid case")
+            index+=1
             continue
-        
+                
+
     print("sukukata", sukukata)
     
     sukukata = [value for value in sukukata if type(value) != int]
