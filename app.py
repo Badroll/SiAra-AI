@@ -10,6 +10,7 @@ import json
 
 import algorithm
 import helper
+import env
 
 app = Flask(__name__, template_folder="view", static_folder="lib")
 app.config["JSON_SORT_KEYS"] = False
@@ -21,10 +22,8 @@ log = ""
 @app.route("/tes", methods = ["GET", "POST"])
 def tes():
     import requests
-    TOKEN = "6353387757:AAHarFsMOrHwVg__9dGiEVOnal7_PGpPbuU"
-    chat_id = "-1001986787293"
     message = "testing"
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
+    url = f"https://api.telegram.org/bot{env.TOKEN}/sendMessage?chat_id={env.chat_id}&text={message}"
     print(requests.get(url).json()) # this sends the message
     return "y"
 
@@ -75,7 +74,7 @@ def aksara2latin():
 
         gambar = Image.open(imgpath)
         gambar = gambar.convert('L')
-        threshold = 200  # Nilai ambang batas, sesuaikan sesuai kebutuhan
+        threshold = 128  # Nilai ambang batas, sesuaikan sesuai kebutuhan
         gambar = gambar.point(lambda x: 0 if x < threshold else 255, '1')
         gambar.save(imgpath)
 
@@ -144,9 +143,11 @@ def aksara2latin():
         return sorted_horizontal_objects
 
     PATH_TO_IMAGES = filepath 
-    PATH_TO_MODEL = 'model/custom_model_lite/detect.tflite'   # Path to .tflite model file
-    PATH_TO_LABELS = 'model/custom_model_lite/labelmap.txt'   # Path to labelmap.txt file
+    PATH_TO_MODEL = 'model/custom_model_lite7/detect.tflite'   # Path to .tflite model file
+    PATH_TO_LABELS = 'model/labelmap.txt'   # Path to labelmap.txt file
     min_conf_threshold=0.01
+
+    log += "\nmodel : " + PATH_TO_MODEL + "\n"
     
     objects = detect_images(PATH_TO_MODEL, PATH_TO_IMAGES, PATH_TO_LABELS, min_conf_threshold)
     log += "\nsorted_horizontal_objects : "
@@ -177,6 +178,38 @@ def aksara2latin():
     log = ""
 
     return helper.composeReply("SUCCESS", "Hasil konversi gambar ke teks latin", returnData)
+
+
+@app.route("/hooks", methods = ["GET", "POST"])
+def hooks():
+    print("HOOKS CALLED")
+    json_req = request.get_json()
+    print(json_req)
+    print(type(json_req))
+    json_req = json.loads(json.dumps(json_req))
+    print(type(json_req))
+
+    import requests
+
+    url = 'https://watesta.badrulam.com/api/hooks'
+
+    # Data JSON yang akan Anda kirim sebagai body parameter
+    data = json_req
+
+    # Menggunakan metode POST dan mengirim data JSON
+    response = requests.post(url, json=data)
+
+    # Mengecek status response
+    if response.status_code == 200:
+        print('hooks Berhasil!')
+        # Anda dapat mengakses response JSON (jika ada)
+        response_json = response.json()
+        print(response_json)
+    else:
+        print('hooks Gagal:', response.status_code)
+    
+    return "Y"
+
 
 if __name__ == '__main__':
     runHost = "0.0.0.0"
