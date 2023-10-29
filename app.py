@@ -143,9 +143,14 @@ def aksara2latin():
         return sorted_horizontal_objects
 
     PATH_TO_IMAGES = filepath 
-    PATH_TO_MODEL = 'model/custom_model_lite7/detect.tflite'   # Path to .tflite model file
+    PATH_TO_MODEL = 'model/custom_model_lite4/detect.tflite'   # Path to .tflite model file
     PATH_TO_LABELS = 'model/labelmap.txt'   # Path to labelmap.txt file
     min_conf_threshold=0.01
+
+    # PATH_TO_IMAGES = filepath 
+    # PATH_TO_MODEL = 'model/custom_model_lite9/detect.tflite'   # Path to .tflite model file
+    # PATH_TO_LABELS = 'model/labelmap_single.txt'   # Path to labelmap.txt file
+    # min_conf_threshold=0.01
 
     log += "\nmodel : " + PATH_TO_MODEL + "\n"
     
@@ -178,37 +183,6 @@ def aksara2latin():
     log = ""
 
     return helper.composeReply("SUCCESS", "Hasil konversi gambar ke teks latin", returnData)
-
-
-@app.route("/hooks", methods = ["GET", "POST"])
-def hooks():
-    print("HOOKS CALLED")
-    json_req = request.get_json()
-    print(json_req)
-    print(type(json_req))
-    json_req = json.loads(json.dumps(json_req))
-    print(type(json_req))
-
-    import requests
-
-    url = 'https://watesta.badrulam.com/api/hooks'
-
-    # Data JSON yang akan Anda kirim sebagai body parameter
-    data = json_req
-
-    # Menggunakan metode POST dan mengirim data JSON
-    response = requests.post(url, json=data)
-
-    # Mengecek status response
-    if response.status_code == 200:
-        print('hooks Berhasil!')
-        # Anda dapat mengakses response JSON (jika ada)
-        response_json = response.json()
-        print(response_json)
-    else:
-        print('hooks Gagal:', response.status_code)
-    
-    return "Y"
 
 
 if __name__ == '__main__':

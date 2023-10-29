@@ -30,7 +30,8 @@ def send_telegram(msg):
     import requests
     message = msg
     url = f"https://api.telegram.org/bot{env.TOKEN}/sendMessage?chat_id={env.chat_id}&text={message}"
-    print(requests.get(url).json()) # this sends the message
+    do = requests.get(url).json()
+    #print(do) # this sends the message
 
 def send_telegram_photo(file):
     import requests
@@ -52,4 +53,4 @@ def send_telegram_photo(file):
         response = requests.post(url, data=data, files=files)
 
     # Cek respon dari API Telegram
-    print(response.json())
+    #print(response.json())
