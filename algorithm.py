@@ -10,7 +10,7 @@ def tipe(c):
         r = "vokal"
     elif (c in ["{", "=", "h"]):
         r = "paten"
-    elif (c in ["\\"]):
+    elif (c in ["_"]):
         r = "pangkon"
     elif (c in ["]", "}", "-"]):
         r = "cakra"
@@ -152,27 +152,30 @@ def find_LRTB(pos, objek, horizontal_objects):
     print(f"Objek terdekat di sebelah {pos} dari {objek} adalah {objek_terdekat}")
     return objek_terdekat
 
-def post_processing(test_data):
+def post_processing(raw_data):
+    print("raw_data",raw_data)
     processed = []
-    for char_elemen in test_data:
+    for char_elemen in raw_data:
         char_karakter = char_elemen[0]
         char_jenis = tipe(char_karakter)
+        print("char_jenis", char_jenis)
         conf = char_elemen[1]
         if char_jenis == "aksara" or (char_jenis == "pasangan" and not char_karakter == "V"):
             if conf > 0.8:
                 processed.append(char_elemen)
         elif char_karakter == "V" or char_karakter == "-" or char_jenis == "pangkon":
-            if conf > 0.4:
+            if conf > 0.5:
                 processed.append(char_elemen)
         elif char_jenis == "vokal":
-            if conf > 0.4:
+            if conf > 0.5:
                 processed.append(char_elemen)
         elif char_jenis == "paten":
-            if conf > 0.4:
+            if conf > 0.5:
                 processed.append(char_elemen)
         elif char_karakter == "]" or char_karakter == "}":
-            if conf > 0.4:
+            if conf > 0.5:
                 processed.append(char_elemen)
+    print("=========post_processing=================")
     print(processed)
     return processed
        
@@ -201,6 +204,7 @@ def arrange(test_data):
         karakter_elemen = row.split(",")
         karakter_karakter = karakter_elemen[0]
         karakter_jenis = tipe(karakter_karakter)
+        print("karakter_jenis",karakter_jenis)
         karakter_xmin = int(karakter_elemen[1])
         karakter_ymin = int(karakter_elemen[2])
         karakter_xmax = int(karakter_elemen[3])
@@ -307,7 +311,7 @@ def arrange(test_data):
 def labeled2aksara(kalimat):
     r = ""
 
-    ref = {'a': 'aksara_ha', 'n': 'aksara_na', 'c': 'aksara_ca', 'r': 'aksara_ra', 'k': 'aksara_ka', 'f': 'aksara_da', 't': 'aksara_ta', 's': 'aksara_sa', 'w': 'aksara_wa', 'l': 'aksara_la', 'p': 'aksara_pa', 'd': 'aksara_dha', 'j': 'aksara_ja', 'y': 'aksara_ya', 'v': 'aksara_nya', 'm': 'aksara_ma', 'g': 'aksara_ga', 'b': 'aksara_ba', 'q': 'aksara_tha', 'z': 'aksara_nga', 'H': 'pasangan_ha', 'N': 'pasangan_na', 'C': 'pasangan_ca', 'R': 'pasangan_ra', 'K': 'pasangan_ka', 'F': 'pasangan_da', 'T': 'pasangan_ta', 'S': 'pasangan_sa', 'W': 'pasangan_wa', 'L': 'pasangan_la', 'P': 'pasangan_pa', 'D': 'pasangan_dha', 'J': 'pasangan_ja', 'Y': 'pasangan_ya', 'V': 'pasangan_nya', 'M': 'pasangan_ma', 'G': 'pasangan_ga', 'B': 'pasangan_ba', 'Q': 'pasangan_tha', 'Z': 'pasangan_nga', 'u': 'sandangan_vokal_suku', 'i': 'sandangan_vokal_wulu', 'e': 'sandangan_vokal_pepet', '[': 'sandangan_vokal_taling', '/': 'sandangan_paten_layar', '=': 'sandangan_paten_cecak', 'h': 'sandangan_paten_wignyan', '\\': 'sandangan_pangkon', ']': 'sandangan_konsonan_cakra_ra', '}': 'sandangan_konsonan_cakra_keret', '-': 'sandangan_konsonan_pengkol', 'o': 'sandangan_vokal_taling_tarung'}
+    ref = {'a': 'aksara_ha', 'n': 'aksara_na', 'c': 'aksara_ca', 'r': 'aksara_ra', 'k': 'aksara_ka', 'f': 'aksara_da', 't': 'aksara_ta', 's': 'aksara_sa', 'w': 'aksara_wa', 'l': 'aksara_la', 'p': 'aksara_pa', 'd': 'aksara_dha', 'j': 'aksara_ja', 'y': 'aksara_ya', 'v': 'aksara_nya', 'm': 'aksara_ma', 'g': 'aksara_ga', 'b': 'aksara_ba', 'q': 'aksara_tha', 'z': 'aksara_nga', 'H': 'pasangan_ha', 'N': 'pasangan_na', 'C': 'pasangan_ca', 'R': 'pasangan_ra', 'K': 'pasangan_ka', 'F': 'pasangan_da', 'T': 'pasangan_ta', 'S': 'pasangan_sa', 'W': 'pasangan_wa', 'L': 'pasangan_la', 'P': 'pasangan_pa', 'D': 'pasangan_dha', 'J': 'pasangan_ja', 'Y': 'pasangan_ya', 'V': 'pasangan_nya', 'M': 'pasangan_ma', 'G': 'pasangan_ga', 'B': 'pasangan_ba', 'Q': 'pasangan_tha', 'Z': 'pasangan_nga', 'u': 'sandangan_vokal_suku', 'i': 'sandangan_vokal_wulu', 'e': 'sandangan_vokal_pepet', '[': 'sandangan_vokal_taling', '{': 'sandangan_paten_layar', '=': 'sandangan_paten_cecak', 'h': 'sandangan_paten_wignyan', '_': 'sandangan_pangkon', ']': 'sandangan_konsonan_cakra_ra', '}': 'sandangan_konsonan_cakra_keret', '-': 'sandangan_konsonan_pengkol', 'o': 'sandangan_vokal_taling_tarung'}
 
     chars = []
     last_taling = None
@@ -320,10 +324,10 @@ def labeled2aksara(kalimat):
 
     for i in chars:
         key = i
-        if i == "{":
-            key = "/"
-        if i == "_":
-            key == "\\"
+        # if i == "{":
+        #     key = "/"
+        # if i == "_":
+        #     key == "\\"
         if not key == "":
             r += ref[key] + ","
 
