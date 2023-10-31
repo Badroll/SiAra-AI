@@ -9,6 +9,7 @@ import os
 import json
 
 import algorithm
+import algotihm2
 import helper
 import env
 
@@ -64,8 +65,7 @@ def aksara2latin():
         height = input_details[0]['shape'][1]
         width = input_details[0]['shape'][2]
 
-        log += "\ninput_details:"
-        log += f"\n{height} {width}\n"
+        log += f"shape: {height} {width}\n"
 
         float_input = (input_details[0]['dtype'] == np.float32)
 
@@ -79,21 +79,25 @@ def aksara2latin():
         gambar.save(imgpath)
 
         image = cv2.imread(imgpath)
-        #image = cv2.resize(image, (2000, 1500))
+        log += "\noriginal image shape:"
+        log += f"\n{image.shape}\n"
+
+        maxium_char_height = 500
+        resize_uniform = None
+        char_height = algotihm2.char_height(imgpath, black_pixel_threshold = 1000)
+        if char_height > maxium_char_height:
+            resize_uniform = algotihm2.resize_uniform(imgpath, char_height = char_height, maximum_char_height = maxium_char_height)
+            image = cv2.imread(imgpath)
+
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         imH, imW, _ = image.shape
-        # image_rgb = cv2.resize(image_rgb, (2000, 1126))
-        # cv2.imwrite("uploads//resized-1-" + filename, image_rgb)
         image_resized = cv2.resize(image_rgb, (width, height))
         input_data = np.expand_dims(image_resized, axis=0)
 
         cv2.imwrite(resized_filepath, image_resized)
 
-        log += "\noriginal image shape:"
-        log += f"\n{image.shape}\n"
-
-        log += "\nresized image shape:"
-        log += f"\n{image_resized.shape}\n"
+        log += "\nresized image:"
+        log += f"\n{resize_uniform}\n"
 
         if float_input:
             input_data = (np.float32(input_data) - input_mean) / input_std
@@ -142,8 +146,8 @@ def aksara2latin():
 
         return sorted_horizontal_objects
 
-    PATH_TO_IMAGES = filepath 
-    PATH_TO_MODEL = 'model/custom_model_lite4/detect.tflite'   # Path to .tflite model file
+    PATH_TO_IMAGES = filepath
+    PATH_TO_MODEL = 'model/custom_model_lite10/detect.tflite'   # Path to .tflite model file
     PATH_TO_LABELS = 'model/labelmap.txt'   # Path to labelmap.txt file
     min_conf_threshold=0.01
 
@@ -152,10 +156,10 @@ def aksara2latin():
     # PATH_TO_LABELS = 'model/labelmap_single.txt'   # Path to labelmap.txt file
     # min_conf_threshold=0.01
 
-    log += "\nmodel : " + PATH_TO_MODEL + "\n"
+    log += "\nmodel: " + PATH_TO_MODEL + "\n"
     
     objects = detect_images(PATH_TO_MODEL, PATH_TO_IMAGES, PATH_TO_LABELS, min_conf_threshold)
-    log += "\nsorted_horizontal_objects : "
+    log += "\nsorted_horizontal_objects: "
     for i in objects:
         log += "\n" + str(i)
     log += "\n"
@@ -173,7 +177,7 @@ def aksara2latin():
     log += "\n" + str(returnData) + "\n"
 
     helper.send_telegram(f"===== SIARA =====\n aksara2latin \n {request.url_root}")
-    helper.send_telegram_photo(resized_filepath)
+    #helper.send_telegram_photo(resized_filepath)
     helper.send_telegram_photo(labeled_filepath)
     helper.send_telegram(log)
 
