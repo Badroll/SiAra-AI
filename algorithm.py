@@ -1,5 +1,3 @@
-import re
-
 def tipe(c):
     r = ""
     if (c in ["a", "n", "c", "r", "k", "f", "t", "s", "w", "l", "p", "d", "j", "y", "v", "m", "g", "b", "q", "z"]):
@@ -10,7 +8,7 @@ def tipe(c):
         r = "vokal"
     elif (c in ["{", "=", "h"]):
         r = "paten"
-    elif (c in ["_"]):
+    elif (c in ["\\"]):
         r = "pangkon"
     elif (c in ["]", "}", "-"]):
         r = "cakra"
@@ -152,36 +150,36 @@ def find_LRTB(pos, objek, horizontal_objects):
     print(f"Objek terdekat di sebelah {pos} dari {objek} adalah {objek_terdekat}")
     return objek_terdekat
 
-def post_processing(raw_data):
-    print("raw_data",raw_data)
+
+def post_processing(detections):
     processed = []
-    for char_elemen in raw_data:
+    for char_elemen in detections:
         char_karakter = char_elemen[0]
         char_jenis = tipe(char_karakter)
-        print("char_jenis", char_jenis)
         conf = char_elemen[1]
         if char_jenis == "aksara" or (char_jenis == "pasangan" and not char_karakter == "V"):
             if conf > 0.8:
                 processed.append(char_elemen)
         elif char_karakter == "V" or char_karakter == "-" or char_jenis == "pangkon":
-            if conf > 0.5:
+            if conf > 0.7:
                 processed.append(char_elemen)
         elif char_jenis == "vokal":
-            if conf > 0.5:
+            if conf > 0.8:
                 processed.append(char_elemen)
         elif char_jenis == "paten":
-            if conf > 0.5:
+            if conf > 0.8:
                 processed.append(char_elemen)
         elif char_karakter == "]" or char_karakter == "}":
-            if conf > 0.5:
+            if conf > 0.8:
                 processed.append(char_elemen)
-    print("=========post_processing=================")
+    print("================ post_processing ====================")
     print(processed)
+    print("===========================\n")
     return processed
        
 
-def arrange(test_data):
-    listH = sort_horizontal_by_xmin(test_data)
+def arrange(raw_data):
+    listH = sort_horizontal_by_xmin(raw_data)
     listH_formatted = format_list(listH)
 
     main_centroid_y = None
@@ -204,7 +202,6 @@ def arrange(test_data):
         karakter_elemen = row.split(",")
         karakter_karakter = karakter_elemen[0]
         karakter_jenis = tipe(karakter_karakter)
-        print("karakter_jenis",karakter_jenis)
         karakter_xmin = int(karakter_elemen[1])
         karakter_ymin = int(karakter_elemen[2])
         karakter_xmax = int(karakter_elemen[3])
@@ -302,16 +299,56 @@ def arrange(test_data):
         if not have_pangkon == None:
             r += have_pangkon
     
-    print("==========================")
+    print("============ arrange ==============")
     print(r)
+    print("==================================\n")
     return r
 
 # ==============================================
 
+
+def remap_taling(aksara):
+    found_taling = False
+    print(aksara)
+    r = ""
+    for i, karakter in enumerate(aksara):
+        print(karakter)
+        if karakter == "[" and not found_taling:
+            found_taling = True
+            r += ""
+            print("CNT 1")
+            continue
+        if karakter == "[" and found_taling:
+            r += "["
+            print("CNT 1B")
+            continue
+        if found_taling:
+            karakter_jenis = tipe(karakter)
+            if karakter_jenis not in ["vokal", "pangkon"] and i+1 < len(aksara):
+                r += karakter
+                print("CNT 2")
+                continue
+            else:
+                if i+1 == len(aksara):
+                    r += karakter + "["
+                else:
+                    r += "[" + karakter
+                found_taling = False
+                print("CNT 3")
+                continue
+        r += karakter
+        print("CNT 0")
+        continue
+    print("=========== remap_taling =============")
+    print(r)
+    print("===================================\n")
+    return r
+    
+
 def labeled2aksara(kalimat):
     r = ""
 
-    ref = {'a': 'aksara_ha', 'n': 'aksara_na', 'c': 'aksara_ca', 'r': 'aksara_ra', 'k': 'aksara_ka', 'f': 'aksara_da', 't': 'aksara_ta', 's': 'aksara_sa', 'w': 'aksara_wa', 'l': 'aksara_la', 'p': 'aksara_pa', 'd': 'aksara_dha', 'j': 'aksara_ja', 'y': 'aksara_ya', 'v': 'aksara_nya', 'm': 'aksara_ma', 'g': 'aksara_ga', 'b': 'aksara_ba', 'q': 'aksara_tha', 'z': 'aksara_nga', 'H': 'pasangan_ha', 'N': 'pasangan_na', 'C': 'pasangan_ca', 'R': 'pasangan_ra', 'K': 'pasangan_ka', 'F': 'pasangan_da', 'T': 'pasangan_ta', 'S': 'pasangan_sa', 'W': 'pasangan_wa', 'L': 'pasangan_la', 'P': 'pasangan_pa', 'D': 'pasangan_dha', 'J': 'pasangan_ja', 'Y': 'pasangan_ya', 'V': 'pasangan_nya', 'M': 'pasangan_ma', 'G': 'pasangan_ga', 'B': 'pasangan_ba', 'Q': 'pasangan_tha', 'Z': 'pasangan_nga', 'u': 'sandangan_vokal_suku', 'i': 'sandangan_vokal_wulu', 'e': 'sandangan_vokal_pepet', '[': 'sandangan_vokal_taling', '{': 'sandangan_paten_layar', '=': 'sandangan_paten_cecak', 'h': 'sandangan_paten_wignyan', '_': 'sandangan_pangkon', ']': 'sandangan_konsonan_cakra_ra', '}': 'sandangan_konsonan_cakra_keret', '-': 'sandangan_konsonan_pengkol', 'o': 'sandangan_vokal_taling_tarung'}
+    ref = {'a': 'aksara_ha', 'n': 'aksara_na', 'c': 'aksara_ca', 'r': 'aksara_ra', 'k': 'aksara_ka', 'f': 'aksara_da', 't': 'aksara_ta', 's': 'aksara_sa', 'w': 'aksara_wa', 'l': 'aksara_la', 'p': 'aksara_pa', 'd': 'aksara_dha', 'j': 'aksara_ja', 'y': 'aksara_ya', 'v': 'aksara_nya', 'm': 'aksara_ma', 'g': 'aksara_ga', 'b': 'aksara_ba', 'q': 'aksara_tha', 'z': 'aksara_nga', 'H': 'pasangan_ha', 'N': 'pasangan_na', 'C': 'pasangan_ca', 'R': 'pasangan_ra', 'K': 'pasangan_ka', 'F': 'pasangan_da', 'T': 'pasangan_ta', 'S': 'pasangan_sa', 'W': 'pasangan_wa', 'L': 'pasangan_la', 'P': 'pasangan_pa', 'D': 'pasangan_dha', 'J': 'pasangan_ja', 'Y': 'pasangan_ya', 'V': 'pasangan_nya', 'M': 'pasangan_ma', 'G': 'pasangan_ga', 'B': 'pasangan_ba', 'Q': 'pasangan_tha', 'Z': 'pasangan_nga', 'u': 'sandangan_vokal_suku', 'i': 'sandangan_vokal_wulu', 'e': 'sandangan_vokal_pepet', '[': 'sandangan_vokal_taling', '/': 'sandangan_paten_layar', '=': 'sandangan_paten_cecak', 'h': 'sandangan_paten_wignyan', '\\': 'sandangan_pangkon', ']': 'sandangan_konsonan_cakra_ra', '}': 'sandangan_konsonan_cakra_keret', '-': 'sandangan_konsonan_pengkol', 'o': 'sandangan_vokal_taling_tarung'}
 
     chars = []
     last_taling = None
@@ -324,18 +361,20 @@ def labeled2aksara(kalimat):
 
     for i in chars:
         key = i
-        # if i == "{":
-        #     key = "/"
-        # if i == "_":
-        #     key == "\\"
+        if i == "{":
+            key = "/"
+        if i == "_":
+            key == "\\"
         if not key == "":
             r += ref[key] + ","
 
     r = r[:-1]
     
-    print("labeled2aksara")
+    print("============= labeled2aksara ======================")
     print(r)
+    print("==================================\n")
     return r
+            
 
 # ==============================================
 
@@ -411,6 +450,7 @@ def unpackaksara(aksara):
     
     list_aksara = list(aksara.split(","))
     for karakter in list_aksara:
+        print(karakter)
         if karakter.startswith("pasangan_"):
             unpacked = "sandangan_pangkon,aksara_" + karakter.replace("pasangan_", "")
             latin += unpacked 
@@ -438,10 +478,13 @@ def unpackaksara(aksara):
 
     latin = latin.rstrip(",")
 
-    print("unpackaksara", latin)
+    print("============ unpackaksara =================")
+    print(latin)
+    print("==================================\n")
     return latin
 
 
+#UNUSED
 def aksara2latin(aksara):
     latin = ""
     
@@ -837,6 +880,16 @@ def aksara2latin2(aksara):
     latin = latin.replace("ď", "dh").replace("ť", "th").replace("ñ", "ny").replace("ń", "ng")
 
     # input MURNI, output MURNI
-    print("LATIN =>", latin)
-    print("==========================================")
+    print("=========== aksara2latin2 ===============")
+    print(latin)
+    print("==========================================\n")
     return latin
+
+
+# objects = "[n[corup}iket\\ak["
+# objects = "a[[n[k-"
+# objects = remap_taling(objects)
+# objects = labeled2aksara(objects)
+# objects = unpackaksara(objects)
+# objects = aksara2latin2(objects)
+# print(objects)

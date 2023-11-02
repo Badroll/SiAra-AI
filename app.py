@@ -74,7 +74,7 @@ def aksara2latin():
 
         gambar = Image.open(imgpath)
         gambar = gambar.convert('L')
-        threshold = 128  # Nilai ambang batas, sesuaikan sesuai kebutuhan
+        threshold = 80  # Nilai ambang batas, sesuaikan sesuai kebutuhan
         gambar = gambar.point(lambda x: 0 if x < threshold else 255, '1')
         gambar.save(imgpath)
 
@@ -165,6 +165,7 @@ def aksara2latin():
     log += "\n"
     objects = algorithm.post_processing(objects)
     objects = algorithm.arrange(objects)
+    objects = algorithm.remap_taling(objects)
     objects = algorithm.labeled2aksara(objects)
     objects = algorithm.unpackaksara(objects)
     objects = algorithm.aksara2latin2(objects)
