@@ -72,9 +72,27 @@ def aksara2latin():
         input_mean = 127.5
         input_std = 127.5
 
+        def resize_image(image_path, target_width=4000, target_height=3000):
+            img = Image.open(image_path)
+            width, height = img.size
+
+            if width < target_width or height < target_height:
+                # Jika ukuran gambar lebih kecil dari target, lakukan resize
+                img = img.resize((target_width, target_height), Image.LANCZOS)
+                img.save(image_path)
+
+        def process_image(imgpath):
+            # Mengecek ukuran gambar
+            img = Image.open(imgpath)
+            width, height = img.size
+            if width < 4000 or height < 3000:
+                # Ubah ukuran gambar menjadi 4000x3000 jika lebih kecil
+                resize_image(imgpath)
+        process_image(imgpath)
+
         gambar = Image.open(imgpath)
         gambar = gambar.convert('L')
-        threshold = 80  # Nilai ambang batas, sesuaikan sesuai kebutuhan
+        threshold = 90  # Nilai ambang batas, sesuaikan sesuai kebutuhan
         gambar = gambar.point(lambda x: 0 if x < threshold else 255, '1')
         gambar.save(imgpath)
 
