@@ -152,25 +152,26 @@ def find_LRTB(pos, objek, horizontal_objects):
 
 
 def post_processing(detections):
+    print(detections)
     processed = []
     for char_elemen in detections:
         char_karakter = char_elemen[0]
         char_jenis = tipe(char_karakter)
         conf = char_elemen[1]
         if char_jenis == "aksara" or (char_jenis == "pasangan" and not char_karakter == "V"):
-            if conf > 0.8:
+            if conf > 0.7:
                 processed.append(char_elemen)
         elif char_karakter == "V" or char_karakter == "-" or char_jenis == "pangkon":
             if conf > 0.7:
                 processed.append(char_elemen)
         elif char_jenis == "vokal":
-            if conf > 0.8:
+            if conf > 0.7:
                 processed.append(char_elemen)
         elif char_jenis == "paten":
-            if conf > 0.8:
+            if conf > 0.7:
                 processed.append(char_elemen)
         elif char_karakter == "]" or char_karakter == "}":
-            if conf > 0.8:
+            if conf > 0.7:
                 processed.append(char_elemen)
     print("================ post_processing ====================")
     print(processed)
@@ -893,3 +894,13 @@ def aksara2latin2(aksara):
 # objects = unpackaksara(objects)
 # objects = aksara2latin2(objects)
 # print(objects)
+
+# objects = [
+#     ['s', 0.99900264, 105, 1230, 784, 1789],
+#     ['i', 0.9993222, 423, 848, 771, 1132],
+#     ['n', 0.9999817, 863, 1212, 1518, 1806],
+#     ['a', 0.99978936, 1548, 1232, 2240, 1803],
+#     ['u', 0.9971182, 2122, 1495, 2405, 2265],
+#     ['j', 0.9983029, 2382, 1228, 3094, 1805],
+#     ['w', 0.98283184, 3145, 1246, 3774, 1818],
+# ]

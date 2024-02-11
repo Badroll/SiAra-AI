@@ -28,10 +28,11 @@ def tes():
     print(requests.get(url).json()) # this sends the message
     return "y"
 
-@app.route("/aksara2latin", methods = ["GET", "POST"])
+@app.route("/aksara2latin", methods = ["POST"])
 def aksara2latin():
     global log
     file = request.files["image"]
+    model = request.form.get("model")
     if "image" not in request.files: return helper.composeReply("ERROR", "Gagal memuat file #1")
     if file.filename == "": return helper.composeReply("ERROR", "Gagal memuat file #2")
     if not (file and helper.allowed_file(file.filename)): 
@@ -92,7 +93,7 @@ def aksara2latin():
 
         gambar = Image.open(imgpath)
         gambar = gambar.convert('L')
-        threshold = 90  # Nilai ambang batas, sesuaikan sesuai kebutuhan
+        threshold = 80 
         gambar = gambar.point(lambda x: 0 if x < threshold else 255, '1')
         gambar.save(imgpath)
 
@@ -145,6 +146,7 @@ def aksara2latin():
                 cv2.rectangle(image, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
                 cv2.putText(image, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
                 detections.append([object_name, scores[i], xmin, ymin, xmax, ymax])
+        cv2.putText(image, model, (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 2)
         
         sorted_horizontal_objects = sort_objects_by_horizontal(detections)
 
@@ -165,16 +167,16 @@ def aksara2latin():
         return sorted_horizontal_objects
 
     PATH_TO_IMAGES = filepath
-    PATH_TO_MODEL = 'model/custom_model_lite10/detect.tflite'   # Path to .tflite model file
-    PATH_TO_LABELS = 'model/labelmap.txt'   # Path to labelmap.txt file
-    min_conf_threshold=0.01
+    PATH_TO_MODEL = 'model/ocr11-custom_model_lite/detect.tflite'
+    #PATH_TO_MODEL = '../ocr10 (hp)/custom_model_lite_3/detect.tflite'
+    if not model == None:
+        PATH_TO_MODEL = model
+    PATH_TO_LABELS = 'model/labelmap.txt'
 
-    # PATH_TO_IMAGES = filepath 
-    # PATH_TO_MODEL = 'model/custom_model_lite9/detect.tflite'   # Path to .tflite model file
-    # PATH_TO_LABELS = 'model/labelmap_single.txt'   # Path to labelmap.txt file
-    # min_conf_threshold=0.01
+    min_conf_threshold=0.5
 
-    log += "\nmodel: " + PATH_TO_MODEL + "\n"
+    log += f"===== SIARA =====\n aksara2latin \n {request.url_root}"
+    log += "\n\nmodel: " + PATH_TO_MODEL + "\n"
     
     objects = detect_images(PATH_TO_MODEL, PATH_TO_IMAGES, PATH_TO_LABELS, min_conf_threshold)
     log += "\nsorted_horizontal_objects: "
@@ -195,7 +197,7 @@ def aksara2latin():
     }
     log += "\n" + str(returnData) + "\n"
 
-    helper.send_telegram(f"===== SIARA =====\n aksara2latin \n {request.url_root}")
+    #helper.send_telegram(f"===== SIARA =====\n aksara2latin \n {request.url_root}")
     #helper.send_telegram_photo(resized_filepath)
     helper.send_telegram_photo(labeled_filepath)
     helper.send_telegram(log)
